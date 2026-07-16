@@ -1,122 +1,143 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createGame, fireShot, type Coord, type FireResult } from './engine';
+import { chooseAiShot } from './ui/tempRandomAi';
+import { Grid } from './ui/Grid';
+import { ShipTracker } from './ui/ShipTracker';
+import { StatusBar } from './ui/StatusBar';
+import {
+  AI_GRID_TITLE,
+  EVENT_HIT,
+  EVENT_LOSS,
+  EVENT_MISS,
+  EVENT_WIN,
+  FOOTER,
+  MOUNT_LOG,
+  NEW_GAME,
+  PLAYER_GRID_TITLE,
+  TITLE,
+  TURN_AI,
+  TURN_PLAYER,
+  eventSunk,
+} from './ui/copy';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+/** Delay before the temporary AI fires its shot, in milliseconds. */
+const AI_DELAY_MS = 600;
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+/**
+ * Map a fire result to the exact status-bar copy. Win/loss (read from the
+ * returned `winner` field, never by scanning the board) take precedence over
+ * the hit/miss/sunk copy.
+ */
+function describeResult(res: FireResult): string {
+  if (res.winner === 'player') return EVENT_WIN;
+  if (res.winner === 'ai') return EVENT_LOSS;
+  switch (res.result) {
+    case 'hit':
+      return EVENT_HIT;
+    case 'miss':
+      return EVENT_MISS;
+    case 'sunk':
+      return eventSunk(res.shipName!);
+    default:
+      return '';
+  }
 }
 
-export default App
+function App() {
+  const [game, setGame] = useState(() => createGame());
+  const [event, setEvent] = useState('');
+  const [aiPending, setAiPending] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    console.log(MOUNT_LOG);
+  }, []);
+
+  const clearPendingTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  // Clear any pending AI timer if the component unmounts.
+  useEffect(() => clearPendingTimer, [clearPendingTimer]);
+
+  const handlePlayerFire = useCallback(
+    (coord: Coord) => {
+      // Ignore all input while the AI's delayed shot is pending or the game is over.
+      if (aiPending || game.winner !== null) return;
+
+      const playerRes = fireShot(game, 'player', coord);
+      if (playerRes.result === 'invalid') return;
+
+      setGame(playerRes.newState);
+      setEvent(describeResult(playerRes));
+
+      if (playerRes.winner !== null) return; // Player won: no AI turn.
+
+      // Hand the turn to the temporary AI after a fixed delay.
+      setAiPending(true);
+      timerRef.current = setTimeout(() => {
+        const aiCoord = chooseAiShot(playerRes.newState);
+        const aiRes = fireShot(playerRes.newState, 'ai', aiCoord);
+        setGame(aiRes.newState);
+        setEvent(describeResult(aiRes));
+        setAiPending(false);
+        timerRef.current = null;
+      }, AI_DELAY_MS);
+    },
+    [aiPending, game],
+  );
+
+  const handleNewGame = useCallback(() => {
+    clearPendingTimer();
+    setGame(createGame());
+    setEvent('');
+    setAiPending(false);
+  }, [clearPendingTimer]);
+
+  const turnLabel =
+    game.winner !== null ? '' : aiPending ? TURN_AI : TURN_PLAYER;
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1 className="app-title">{TITLE}</h1>
+        <button type="button" className="new-game" onClick={handleNewGame}>
+          {NEW_GAME}
+        </button>
+      </header>
+
+      <StatusBar turnLabel={turnLabel} event={event} />
+
+      <main className="boards">
+        <div className="board-column">
+          <Grid
+            title={PLAYER_GRID_TITLE}
+            board={game.playerBoard}
+            showShips
+            canFire={false}
+          />
+          <ShipTracker title={PLAYER_GRID_TITLE} board={game.playerBoard} />
+        </div>
+
+        <div className="board-column">
+          <Grid
+            title={AI_GRID_TITLE}
+            board={game.aiBoard}
+            showShips={false}
+            canFire={game.winner === null && !aiPending}
+            onFire={handlePlayerFire}
+          />
+          <ShipTracker title={AI_GRID_TITLE} board={game.aiBoard} />
+        </div>
+      </main>
+
+      <footer className="app-footer">{FOOTER}</footer>
+    </div>
+  );
+}
+
+export default App;
