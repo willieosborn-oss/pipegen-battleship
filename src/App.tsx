@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createGame, fireShot, type Coord, type FireResult } from './engine';
-import { chooseAiShot } from './ui/tempRandomAi';
+import {
+  createGame,
+  fireShot,
+  chooseAiShot,
+  type Coord,
+  type FireResult,
+} from './engine';
 import { Grid } from './ui/Grid';
 import { ShipTracker } from './ui/ShipTracker';
 import { StatusBar } from './ui/StatusBar';
