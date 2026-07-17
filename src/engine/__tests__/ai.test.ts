@@ -115,12 +115,12 @@ describe('chooseAiShot: 500-game simulation', () => {
 describe('chooseAiShot: adjacent ships', () => {
   it('keeps targeting a second ship\u2019s hits after the first ship sinks', () => {
     // Ship A (sunk) at (0,0),(0,1); ship B (one hit) adjacent at (0,2),(1,2),(2,2).
-    const shipA = ship('SMB', [{ row: 0, col: 0 }, { row: 0, col: 1 }], [
+    const shipA = ship('Startup', [{ row: 0, col: 0 }, { row: 0, col: 1 }], [
       true,
       true,
     ]);
     const shipB = ship(
-      'Mid-Market',
+      'Enterprise',
       [{ row: 0, col: 2 }, { row: 1, col: 2 }, { row: 2, col: 2 }],
       [true, false, false],
     );
@@ -149,18 +149,18 @@ describe('chooseAiShot: fairness', () => {
   it('depends only on shot history and sunk ships, not un-sunk placements', () => {
     // Both states share an identical grid and an identical SUNK ship, but their
     // UN-SUNK ships are placed differently. A fair AI must ignore that.
-    const sunk = ship('SMB', [{ row: 0, col: 0 }, { row: 0, col: 1 }], [
+    const sunk = ship('Startup', [{ row: 0, col: 0 }, { row: 0, col: 1 }], [
       true,
       true,
     ]);
 
     const unsunkHorizontal = ship(
-      'Mid-Market',
+      'Enterprise',
       [{ row: 5, col: 5 }, { row: 5, col: 6 }, { row: 5, col: 7 }],
       [true, false, false],
     );
     const unsunkVertical = ship(
-      'Mid-Market',
+      'Enterprise',
       [{ row: 5, col: 5 }, { row: 6, col: 5 }, { row: 7, col: 5 }],
       [true, false, false],
     );

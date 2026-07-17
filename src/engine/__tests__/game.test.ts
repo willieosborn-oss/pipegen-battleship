@@ -65,7 +65,7 @@ describe('fireShot', () => {
 
   it('a ship reports sunk exactly on its final cell hit, not before, with the correct name', () => {
     let state = createGame(7);
-    const name = 'SMB'; // length 2, quickest to sink
+    const name = 'Startup'; // length 2, quickest to sink
     const cells = shipCells(state, 'player', name);
 
     // Hit all but the last cell: each is a plain 'hit', never 'sunk'.

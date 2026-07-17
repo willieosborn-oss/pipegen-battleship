@@ -36,6 +36,13 @@ describe('placeFleetRandomly', () => {
       expect(board.ships.map((s) => s.length).sort((a, b) => a - b)).toEqual(
         [2, 3, 3, 4, 5],
       );
+      expect(board.ships.map((s) => s.name)).toEqual([
+        'Majors',
+        'Strategic Enterprise',
+        'Enterprise',
+        'Growth',
+        'Startup',
+      ]);
 
       const keys = occupiedKeys(board.ships);
 

@@ -22,11 +22,11 @@ export type Winner = Player | null;
 
 /** The five ship names, in descending-length order. */
 export type ShipName =
-  | 'Enterprise Whale'
-  | 'Strategic Account'
-  | 'Mid-Market'
-  | 'Growth Account'
-  | 'SMB';
+  | 'Majors'
+  | 'Strategic Enterprise'
+  | 'Enterprise'
+  | 'Growth'
+  | 'Startup';
 
 /** A placed ship. `hits[i]` tracks whether `cells[i]` has been hit. */
 export interface Ship {
@@ -72,11 +72,11 @@ export interface FireResult {
 
 /** The fleet definition: lengths and names, in placement order. */
 export const FLEET: readonly { name: ShipName; length: number }[] = [
-  { name: 'Enterprise Whale', length: 5 },
-  { name: 'Strategic Account', length: 4 },
-  { name: 'Mid-Market', length: 3 },
-  { name: 'Growth Account', length: 3 },
-  { name: 'SMB', length: 2 },
+  { name: 'Majors', length: 5 },
+  { name: 'Strategic Enterprise', length: 4 },
+  { name: 'Enterprise', length: 3 },
+  { name: 'Growth', length: 3 },
+  { name: 'Startup', length: 2 },
 ];
 
 /** Standard board dimension. */
