@@ -10,9 +10,10 @@ playbook (`bug-hunt.devin.md`), auditing eight bug classes and backing the game
 logic with a 2000-game fuzz (both sides played to completion, asserting no
 invalid/repeat/off-board shots, guaranteed termination, and `winner` set iff the
 loser's fleet is fully sunk). A final manual playthrough exercised the live UI.
-The honest outcome: the adversarial pass and fuzz found **no** new defects in
-the engine or AI — the only live bugs were two tooling/runtime findings surfaced
-by manual play, both now fixed with regression tests.
+The honest outcome: the adversarial pass and fuzz found no new defects in
+the engine or AI. The only live bugs were two toolchain findings, one
+caught by the agent reviewing its own build environment, one caught by me
+watching a test run fail to exit. Both are fixed with regression tests.
 
 ## Findings
 
