@@ -15,7 +15,6 @@ import {
   EVENT_LOSS,
   EVENT_MISS,
   EVENT_WIN,
-  FOOTER,
   MOUNT_LOG,
   NEW_GAME,
   PLAYER_GRID_TITLE,
@@ -139,8 +138,6 @@ function App() {
           <ShipTracker title={AI_GRID_TITLE} board={game.aiBoard} />
         </div>
       </main>
-
-      <footer className="app-footer">{FOOTER}</footer>
     </div>
   );
 }
