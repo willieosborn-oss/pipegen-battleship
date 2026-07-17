@@ -15,6 +15,8 @@ dedicated adversarial bug-hunt and hardening pass. The engine's Vitest suite was
 written before the engine itself, so correctness was pinned from the start;
 later sessions layered UI and AI on top without loosening those guarantees.
 
+I used Claude to help me map out the plan and walk through the steps.
+
 ## Architecture
 
 The `src/engine/` module is a pure, fully immutable core — seeded RNG, random
@@ -40,13 +42,13 @@ npm run build      # type-check + production build
 
 ## Devin sessions
 
-<!-- Willie: fill in the session links/summaries below. -->
+Each session started with a plan I reviewed and approved (or corrected) before any code ran. In order:
 
-- Session 1 — <!-- engine: pure TS + tests-first -->
-- Session 2 — <!-- playable UI + temporary random AI -->
-- Session 3 — <!-- stateless hunt/target AI -->
-- Session 4 — <!-- fleet rename -->
-- Session 5 — <!-- adversarial bug-hunt + hardening -->
+- [Session 1]: Core engine. Pure TypeScript game logic, tests first: 8 passing tests covering placement validity across 1000 generated fleets, turn rules, sink and win detection, immutability, and determinism. No UI.
+- [Session 2]: Playable UI. Two-grid layout, status bar, ship trackers, full reset. The temporary random AI was isolated behind a single chooseAiShot seam so the next session could replace it cleanly.
+- [Session 3]: Hunt/target AI. Fully stateless: every decision is derived fresh from game state, which makes the adjacent-ships edge case work without special bookkeeping. Verified by a 500-game simulation (no repeat or off-board shots, mean ~51 shots to win) plus a structural fairness constraint: the AI can never read un-sunk ship positions.
+- [Session 4]: Fleet rename. Copy-only pass, no logic changes.
+- [Session 5]: Adversarial bug hunt, run from the committed playbook (bug-hunt.devin.md). Audited eight bug classes, proved six impossible with citing tests, fixed the two real findings (both toolchain bugs) with regression tests, and ran a 2000-game fuzz. Full write-up in BUGS.md.****
 
 ## QA playbook
 
