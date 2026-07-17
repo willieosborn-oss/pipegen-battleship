@@ -227,10 +227,3 @@
 .tracker-item-sunk .tracker-status {
   color: var(--sunk);
 }
-
-/* Footer */
-.app-footer {
-  color: var(--text-dim);
-  font-size: 12px;
-  text-align: center;
-}

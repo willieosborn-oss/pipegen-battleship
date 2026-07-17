@@ -22,8 +22,6 @@ export const EVENT_LOSS = 'Pipeline dried up. Rebuild the book?';
 export const TURN_PLAYER = 'Your dial';
 export const TURN_AI = 'AI is prospecting...';
 
-export const FOOTER = 'An SDR never fires at the same account twice.';
-
 export const NEW_GAME = 'New Quarter';
 
 export const MOUNT_LOG =
